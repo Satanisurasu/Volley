@@ -1,35 +1,26 @@
 package com.example.ct2vallay;
 
 
-
+import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.ct2vallay.R;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class MainActivity extends AppCompatActivity {
+    private static final String URL = "https://jsonplaceholder.typicode.com/posts";
     private RecyclerView recyclerView;
     private PostAdapter postAdapter;
     private List<Post> postList = new ArrayList<>();
-    private Button button;
-    private static final String TAG = "MainActivity";
-    private static final String URL = "https://jsonplaceholder.typicode.com/posts";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,8 +32,15 @@ public class MainActivity extends AppCompatActivity {
         postAdapter = new PostAdapter(postList);
         recyclerView.setAdapter(postAdapter);
 
-        button = findViewById(R.id.button);
-        button.setOnClickListener(v -> fetchData());
+        // Установка слушателя для нажатий на элементы списка
+        postAdapter.setOnItemClickListener(post -> {
+            Intent intent = new Intent(MainActivity.this, DetailActivity.class);
+            intent.putExtra("title", post.getTitle());
+            intent.putExtra("body", post.getBody());
+            startActivity(intent);
+        });
+
+        fetchData();
     }
 
     private void fetchData() {
@@ -66,12 +64,13 @@ public class MainActivity extends AppCompatActivity {
                         }
                         postAdapter.notifyDataSetChanged();
                     } catch (Exception e) {
-                        Log.e(TAG, "Error parsing JSON", e);
+                        e.printStackTrace();
                     }
                 },
-                error -> Log.e(TAG, "Volley error", error)
+                error -> error.printStackTrace()
         );
 
         requestQueue.add(jsonArrayRequest);
     }
 }
+
